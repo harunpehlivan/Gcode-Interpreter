@@ -180,7 +180,7 @@ class Cthuhlu(Frame): #test taking frame out
 
     def orderSend(s): #compile with sendToArd  
         if s.TBvar.get() == 1:
-            if s.motor == 'Z' or s.motor == 'C':
+            if s.motor in ['Z', 'C']:
                 rpms = float(s.zrpmEntry.get())
                 msteps = float(s.zEntry.get())
                 order = 'Qm'+str((rpms))+'d'+ str((msteps)) + s.motor + 'e'
@@ -190,23 +190,28 @@ class Cthuhlu(Frame): #test taking frame out
                 order = 'Qr'+str((rpms))+'d'+ str((msteps)) + s.motor + 'e'
             import send_path
             dataBack = send_path.main(order)#don't know: but python won't send data without geting somethin back
-            
+
         if s.TBvar.get() == 2:
-            s.stp = float(s.zEntry.get())*xgs if s.motor == 'Z' or s.motor == 'C' else float(s.xyEntry.get())*xgs
+            s.stp = (
+                float(s.zEntry.get()) * xgs
+                if s.motor in ['Z', 'C']
+                else float(s.xyEntry.get()) * xgs
+            )
+
             if s.motor == 'C':
                 s.surf.create_oval(s.oxc-2,s.oyc-2,s.oxc+2,s.oyc+2, outline="red", fill="black", width=1)
                 s.ozc, s.newz = s.ozc+(s.Zd*s.stp), s.newz+(s.Zd*s.stp)
             if s.motor == 'Z':
                 s.surf.create_oval(s.oxc-2,s.oyc-2,s.oxc+2,s.oyc+2, outline="red", fill="yellow", width=1)
                 s.ozc, s.newz = s.ozc+(s.Zd*s.stp), s.newz+(s.Zd*s.stp)
-            if s.motor != 'C' and s.motor != 'Z':
+            if s.motor not in ['C', 'Z']:
                 s.surf.create_line(s.oxc, s.oyc, s.oxc+(s.Xd*s.stp), s.oyc+(s.Yd*s.stp),fill="black")
                 s.oxc, s.oyc = s.oxc+(s.Xd*s.stp), s.oyc+(s.Yd*s.stp)
                 s.newx,s.newy =  s.newx-(s.Yd*s.stp),s.newy-(s.Xd*s.stp)
             gtype = "G00" if s.ozc > 0 else "G01"
             s.gText.insert(END, gtype + " X"+str(round((float(s.newx)/xgs),4)) +
                 " Y" + str(round((float(s.newy)/xgs),4)) + " Z"+str(round((float(s.newz)/xgs),4))+"\n")
-            s.sendgcode.config(text='Save/Update',bg='red') 
+            s.sendgcode.config(text='Save/Update',bg='red')
             s.tanyagcode.config(state='disabled', text='Save/Update\nTo Send Live', bg='grey')
                     
     def gcodeCall(s):
